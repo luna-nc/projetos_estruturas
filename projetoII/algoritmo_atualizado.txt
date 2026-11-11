@@ -1,0 +1,233 @@
+Função clonar_fila
+Entrada: ponteiro para Fila F 
+Saída: Fila clonada
+	
+	Inicilizar F clone
+	Ponteiro para Elemento aux <- F->inicio
+	Enquanto aux for diferente de NULL
+		Enfilera F clone em aux
+		aux <- aux->prox
+	fim Enquanto
+fim Função
+
+Função cadastrar_expressao 
+Entrada: ponteiro para Fila F 
+Saída: 
+
+    num <- 0.0
+    Enquanto F não for vazia
+        Elem <- Desenfileirar F
+        Libera Elem da memória
+    Fim Enquanto
+    Solicita ao usuário que digite a expressão
+    Enquanto houver caracteres sendo lidos da entrada do usuário e o caractere não for quebra de linha
+        Se o caractere for um dígito e diferente de espaço em branco
+            num <- Acumulo dos dígitos consecutivos
+ 			Enfileira num e operador marcador "#"
+        Senão
+            Enfileira o caractere e 0
+        Fim Se
+    Fim Enquanto
+Fim Função
+
+Função checar_parenteses 
+Entrada: Fila F
+Saída: inteiro ret
+
+    erro <- 0
+    ret <- 1
+    Fila FAux
+    Inicializa FAux
+    FAux <- clone de F
+    Elemento elem
+    Pilha p
+    Inicializa p
+
+    Enquanto FAux não for vazia e erro == 0
+        elem <- Desenfileirar FAux
+        Se elem->Operador == "("
+            Empilha elem em p
+        Senão, Se elem->Operador == ")"
+            Se p não estiver vazia
+                Desempilha um elemento de p
+            Senão
+                erro <- 1
+            Fim Se
+        Fim Se
+    Fim Enquanto
+
+    Se p.total != 0
+        Se erro != 0
+            ret <- 0
+        Fim Se
+        ret <- 0
+    Fim Se
+    Retorna ret
+Fim Função
+
+Função Obter_precedencia 
+Entrada: const char* operador 
+Saída: inteiro precedencia
+
+    precedencia <- 0
+    Se operador == "(" ou operador == ")"
+        precedencia <- 5
+    Senão, Se operador == "*" ou operador == "/"
+        precedencia <- 4
+    Senão, Se operador == "+" ou operador == "-"
+        precedencia <- 3
+    Senão, Se operador == ">" ou operador == "<" ou operador == ">=" ou operador == "<="
+        precedencia <- 2
+    Senão, Se operador == "=" ou operador == "!="
+        precedencia <- 1
+    Fim Se
+Fim Função
+
+Função Calcular_operacao 
+Entrada: real num1, real num2, const char* op
+Saída: real resultado
+
+    resultado <- 0.0
+    Se op == "+"
+        resultado <- num1 + num2
+    Senão, Se op == "-"
+        resultado <- num1 - num2
+    Senão, Se op == "*"
+        resultado <- num1 * num2
+    Senão, Se op == "/"
+        Se num2 != 0
+            resultado <- num1 / num2
+        Senão
+            Apresenta mensagem "erro, nao existe divisao por 0"
+        Fim Se
+    Senão, Se op == ">"
+        resultado <- 1.0 se num1 > num2; senão, 0.0
+    Senão, Se op == "<"
+        resultado <- 1.0 se num1 < num2; senão, 0.0
+    Senão, Se op == "=" ou op == "=="
+        resultado <- 1.0 se num1 == num2; senão, 0.0
+    Senão, Se op == "!="
+        resultado <- 1.0 se num1 != num2; senão, 0.0
+    Senão, Se op == ">="
+        resultado <- 1.0 se num1 >= num2; senão, 0.0
+    Senão
+        resultado <- 1.0 se num1 <= num2; senão, 0.0
+    Fim Se
+Fim Função
+
+Função Resolver_pilhas 
+Entrada: ponteiros para Pilha pNum e Pilha pOp
+Saída:
+
+    Se pOp não estiver vazia e pNum->total >= 2
+        num2 <- Desempilha pNum
+        num1 <- Desempilha pNum
+        op <- Desempilha pOp
+
+        num1->Numero <- Calcular_operacao(num1->Numero, num2->Numero, op->Operador)
+        num1->Prox <- NULL
+        Empilha num1 em pNum
+
+        Libera num2 da memória
+        Libera op da memória
+    Fim Se
+Fim Função
+
+
+Função calcular_expressao 
+Entrada: ponteiro para Fila F 
+Saída: real ret
+
+    ret <- 0.0
+    Pilha PNum, POp
+    Fila FAux
+    Inicializa FAux
+    Inicializa PNum
+    Inicializa POp
+    FAux <- F clonado
+    Enquanto FAux não estiver vazia
+        Elem <- Desenfileirar FAux
+        Elem->Prox <- NULL
+
+        Se Elem->Operador == "#"
+            Empilha Elem em PNum
+        Senão, Se Elem->Operador == "("
+            Empilha Elem em POp
+        Senão, Se Elem->Operador == ")"
+            Enquanto POp não estiver vazia e POp->topo->Operador != "("
+                Chama Resolver_pilhas(PNum, POp)
+            Fim Enquanto
+            Se POp não estiver vazia
+                rem <- Desempilha POp
+                Libera rem da memória
+            Fim Se
+            Libera Elem da memória
+        Senão
+            Enquanto POp não estiver vazia, POp->topo->Operador != "(" e precedencia(Elem->Operador) <= precedencia(POp->topo->Operador)
+                Chama Resolver_pilhas(PNum, POp)
+            Fim Enquanto
+            Empilha Elem em POp
+        Fim Se
+    Fim Enquanto
+
+    Enquanto POp não estiver vazia
+        Chama Resolver_pilhas(PNum, POp)
+    Fim Enquanto
+
+    Se PNum não estiver vazia
+        resElem <- Desempilha PNum
+        ret <- resElem->Numero
+        Libera resElem da memória
+    Fim Se
+Fim Função
+
+Função menu 
+Entrada: Fila F 
+Saída:
+
+    op <- 0
+    Repita
+        Apresenta o menu:
+            [1] - Cadastro de expressão
+            [2] - Checagem de parênteses
+            [3] - Cálculo do resultado considerando os parênteses
+            [0] - Sair
+
+        Lê op
+
+        Escolha op
+            Caso 0:
+                Encerra o menu
+            Caso 1:
+                Chama cadastrar_expressao(F)
+            Caso 2:
+                Se F estiver vazia
+                    Apresenta "Nao ha expressao para ser checada!!"
+                Senão
+                    Se checar_parenteses(F) retornar verdadeiro
+                        Apresenta "tudo certo!"
+                    Senão
+                        Apresenta "sintaxe errada!"
+                    Fim Se
+                Fim Se
+            Caso 3:
+                Se F estiver vazia
+                    Apresenta "Nao ha expressao para ser calculada!!"
+                Senão
+                    Apresenta o retorno de calcular_expressao(F)
+                Fim Se
+            Caso contrário:
+                Apresenta "Opcao invalida!"
+        Fim Escolha
+    Até op == 0
+
+Fim Função
+
+Função main 
+Entrada: 
+Saída: inteiro
+
+    Fila F
+    Inicializa F
+    Chama menu(F)
+Fim Função
